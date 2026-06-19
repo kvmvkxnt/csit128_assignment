@@ -1,11 +1,4 @@
-/* =====================================================================
-   data-loader.js  -  fetches data from the Node/Express API and renders
-   it into the page. The same file is included on every page; each
-   render function runs only if its target element exists on that page,
-   so one script powers the whole site.
-
-   Data source: the JSON "database" exposed by server.js at /api/*.
-   ===================================================================== */
+// fetches /api/* data, renders it; each fn guards on its own target element existing
 
 (function () {
   "use strict";
@@ -87,7 +80,7 @@
           )
           .join("");
       }
-    } catch (e) {
+    } catch {
       if (introEl) introEl.innerHTML = "<p>Unable to load company information.</p>";
     }
   }
@@ -112,7 +105,7 @@
             "</td></tr>",
         )
         .join("");
-    } catch (e) {
+    } catch {
       body.innerHTML = '<tr><td colspan="3">Unable to load timeline.</td></tr>';
     }
   }
@@ -139,11 +132,59 @@
             '<span class="price-tag">' +
             esc(s.startingPrice) +
             "</span>" +
+            '<p style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap">' +
+            '<button type="button" class="btn btn--primary buy-btn" data-item-type="service" data-item-id="' +
+            esc(s.id) +
+            '">Buy this service</button>' +
+            '<a class="btn btn--ghost" href="contact.html?subject=' +
+            encodeURIComponent("Service inquiry: " + s.name) +
+            '">Ask a question</a>' +
+            "</p>" +
             "</article>",
         )
         .join("");
-    } catch (e) {
+    } catch {
       wrap.innerHTML = "<p>Unable to load services.</p>";
+    }
+  }
+
+  // Product cards (read from JSON), shown on products.html.
+  async function renderProducts() {
+    const wrap = document.getElementById("productsGrid");
+    if (!wrap) return;
+    try {
+      const products = await getJSON("/api/products");
+      if (!products.length) {
+        wrap.innerHTML = '<p class="skeleton">No products published yet.</p>';
+        return;
+      }
+      wrap.innerHTML = products
+        .map(
+          (p) =>
+            '<article class="card">' +
+            (p.category ? '<span class="tag">' + esc(p.category) + "</span>" : "") +
+            "<h3>" +
+            esc(p.name) +
+            "</h3>" +
+            "<p>" +
+            esc(p.description) +
+            "</p>" +
+            '<span class="price-tag">' +
+            esc(p.price) +
+            "</span>" +
+            '<p style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap">' +
+            '<button type="button" class="btn btn--primary buy-btn" data-item-type="product" data-item-id="' +
+            esc(p.id) +
+            '">Buy this product</button>' +
+            '<a class="btn btn--ghost" href="contact.html?subject=' +
+            encodeURIComponent("Product inquiry: " + p.name) +
+            '">Ask a question</a>' +
+            "</p>" +
+            "</article>",
+        )
+        .join("");
+    } catch {
+      wrap.innerHTML = "<p>Unable to load products.</p>";
     }
   }
 
@@ -170,7 +211,7 @@
             "</td></tr>",
         )
         .join("");
-    } catch (e) {
+    } catch {
       body.innerHTML = '<tr><td colspan="4">Unable to load awards.</td></tr>';
     }
   }
@@ -214,7 +255,7 @@
           );
         })
         .join("");
-    } catch (e) {
+    } catch {
       wrap.innerHTML = "<p>Unable to load testimonials.</p>";
     }
   }
@@ -254,13 +295,12 @@
           .filter((m) => !m.founder)
           .map(card)
           .join("");
-    } catch (e) {
+    } catch {
       if (founders) founders.innerHTML = "<p>Unable to load the team.</p>";
     }
   }
 
-  // Visitor comments list (newest first) on the feedback page.
-  // Exposed on window so validation.js can refresh it after a new post.
+  // visitor comments, newest first; exposed on window so validation.js can refresh it
   async function renderComments() {
     const wrap = document.getElementById("commentsList");
     if (!wrap) return;
@@ -291,7 +331,7 @@
             "</div>",
         )
         .join("");
-    } catch (e) {
+    } catch {
       wrap.innerHTML = "<p>Unable to load comments.</p>";
     }
   }
@@ -346,41 +386,83 @@
 
       // Show the headquarters by default.
       show("tashkent");
-    } catch (e) {
+    } catch {
       info.innerHTML = "<p>Unable to load office locations.</p>";
     }
   }
 
-  // News page: load the XML document and the XSLT stylesheet, then
-  // transform the XML into HTML in the browser using XSLTProcessor.
+  // news page: press releases read from MySQL via /api/news
   async function renderNews() {
     const wrap = document.getElementById("newsContainer");
     if (!wrap) return;
     try {
-      const [xmlText, xslText] = await Promise.all([
-        fetch("data/news.xml").then((r) => r.text()),
-        fetch("data/news.xsl").then((r) => r.text()),
-      ]);
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(xmlText, "application/xml");
-      const xsl = parser.parseFromString(xslText, "application/xml");
-
-      const processor = new XSLTProcessor();
-      processor.importStylesheet(xsl);
-      const fragment = processor.transformToFragment(xml, document);
-
-      wrap.innerHTML = "";
-      wrap.appendChild(fragment);
-    } catch (e) {
+      const releases = await getJSON("/api/news");
+      wrap.innerHTML = releases
+        .map(
+          (r) =>
+            '<article class="news-item">' +
+            '<div class="date">' +
+            niceDate(r.publishedAt) +
+            (r.category ? ' <span class="tag">' + esc(r.category) + "</span>" : "") +
+            "</div>" +
+            "<h3>" +
+            esc(r.title) +
+            "</h3>" +
+            "<p>" +
+            esc(r.summary) +
+            "</p>" +
+            "</article>",
+        )
+        .join("");
+    } catch {
       wrap.innerHTML = "<p>Unable to load company news.</p>";
     }
   }
+
+  // simulated checkout: Buy buttons on product/service cards (delegated, cards render async)
+  document.addEventListener("click", async function (ev) {
+    const btn = ev.target.closest(".buy-btn");
+    if (!btn) return;
+
+    const itemType = btn.getAttribute("data-item-type");
+    const itemId = btn.getAttribute("data-item-id");
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Placing order…";
+
+    try {
+      const meRes = await fetch("/api/auth/me");
+      if (!meRes.ok) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemType, itemId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        btn.textContent = "Order placed ✓";
+      } else {
+        btn.disabled = false;
+        btn.textContent = (data.errors && data.errors[0]) || "Order failed";
+        setTimeout(() => (btn.textContent = originalText), 2500);
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = "Order failed";
+      setTimeout(() => (btn.textContent = originalText), 2500);
+    }
+  });
 
   /* ---------- run everything relevant for this page --------------- */
   document.addEventListener("DOMContentLoaded", function () {
     renderCompany();
     renderTimeline();
     renderServices();
+    renderProducts();
     renderAwards();
     renderTestimonials();
     renderTeam();
