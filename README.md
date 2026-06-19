@@ -52,6 +52,11 @@ Copy `.env.example` to `.env` and fill in real values:
 cp .env.example .env
 ```
 
+`JWT_SECRET`, `SESSION_SECRET` and the `DB_*` vars are required - the app
+checks for them at startup and refuses to start with a clear error if any
+are missing, rather than starting in a half-broken state (a real, blank
+secret used to crash the process on the first login/register request).
+
 | Variable | Purpose |
 | --- | --- |
 | `PORT` | HTTP port (default 3010) |
