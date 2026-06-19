@@ -10,6 +10,10 @@ const { isValidName, isValidEmail } = require("../utils/validators");
 
 const router = express.Router();
 
+// Defends against ER_DATA_TOO_LONG crashes from oversized form input by
+// clamping to the column width before the value ever reaches a query.
+const clamp = (value, max) => (typeof value === "string" ? value.trim().slice(0, max) : value);
+
 router.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -90,12 +94,12 @@ router.post("/products", verifyCsrfToken, async (req, res) => {
   const { slug, name, category, description, price, image_url, order_index } = req.body;
   if (!slug || !name) return res.redirect("/admin/products");
   await db("products").insert({
-    slug: slug.trim(),
-    name: name.trim(),
-    category: category?.trim() || null,
-    description: description?.trim() || null,
-    price: price?.trim() || null,
-    image_url: image_url?.trim() || null,
+    slug: clamp(slug, 60),
+    name: clamp(name, 150),
+    category: clamp(category, 80) || null,
+    description: clamp(description, 2000) || null,
+    price: clamp(price, 50) || null,
+    image_url: clamp(image_url, 255) || null,
     order_index: Number(order_index) || 0,
   });
   res.redirect("/admin/products");
@@ -106,12 +110,12 @@ router.post("/products/:id", verifyCsrfToken, async (req, res) => {
   await db("products")
     .where({ id: req.params.id })
     .update({
-      slug: slug?.trim(),
-      name: name?.trim(),
-      category: category?.trim() || null,
-      description: description?.trim() || null,
-      price: price?.trim() || null,
-      image_url: image_url?.trim() || null,
+      slug: clamp(slug, 60),
+      name: clamp(name, 150),
+      category: clamp(category, 80) || null,
+      description: clamp(description, 2000) || null,
+      price: clamp(price, 50) || null,
+      image_url: clamp(image_url, 255) || null,
       order_index: Number(order_index) || 0,
       is_active: is_active === "on",
       updated_at: db.fn.now(),
@@ -143,12 +147,12 @@ router.post("/services", verifyCsrfToken, async (req, res) => {
   const { slug, name, icon, summary, details, starting_price, order_index } = req.body;
   if (!slug || !name) return res.redirect("/admin/services");
   await db("services").insert({
-    slug: slug.trim(),
-    name: name.trim(),
-    icon: icon?.trim() || null,
-    summary: summary?.trim() || null,
-    details: details?.trim() || null,
-    starting_price: starting_price?.trim() || null,
+    slug: clamp(slug, 60),
+    name: clamp(name, 150),
+    icon: clamp(icon, 50) || null,
+    summary: clamp(summary, 255) || null,
+    details: clamp(details, 2000) || null,
+    starting_price: clamp(starting_price, 50) || null,
     order_index: Number(order_index) || 0,
   });
   res.redirect("/admin/services");
@@ -159,12 +163,12 @@ router.post("/services/:id", verifyCsrfToken, async (req, res) => {
   await db("services")
     .where({ id: req.params.id })
     .update({
-      slug: slug?.trim(),
-      name: name?.trim(),
-      icon: icon?.trim() || null,
-      summary: summary?.trim() || null,
-      details: details?.trim() || null,
-      starting_price: starting_price?.trim() || null,
+      slug: clamp(slug, 60),
+      name: clamp(name, 150),
+      icon: clamp(icon, 50) || null,
+      summary: clamp(summary, 255) || null,
+      details: clamp(details, 2000) || null,
+      starting_price: clamp(starting_price, 50) || null,
       order_index: Number(order_index) || 0,
       is_active: is_active === "on",
       updated_at: db.fn.now(),
@@ -196,12 +200,12 @@ router.post("/team", verifyCsrfToken, async (req, res) => {
   const { name, role, initials, founder, accent, bio, order_index } = req.body;
   if (!name || !role) return res.redirect("/admin/team");
   await db("team_members").insert({
-    name: name.trim(),
-    role: role.trim(),
-    initials: initials?.trim() || null,
+    name: clamp(name, 100),
+    role: clamp(role, 150),
+    initials: clamp(initials, 5) || null,
     founder: founder === "on",
-    accent: accent?.trim() || null,
-    bio: bio?.trim() || null,
+    accent: clamp(accent, 10) || null,
+    bio: clamp(bio, 2000) || null,
     order_index: Number(order_index) || 0,
   });
   res.redirect("/admin/team");
@@ -212,12 +216,12 @@ router.post("/team/:id", verifyCsrfToken, async (req, res) => {
   await db("team_members")
     .where({ id: req.params.id })
     .update({
-      name: name?.trim(),
-      role: role?.trim(),
-      initials: initials?.trim() || null,
+      name: clamp(name, 100),
+      role: clamp(role, 150),
+      initials: clamp(initials, 5) || null,
       founder: founder === "on",
-      accent: accent?.trim() || null,
-      bio: bio?.trim() || null,
+      accent: clamp(accent, 10) || null,
+      bio: clamp(bio, 2000) || null,
       order_index: Number(order_index) || 0,
       is_active: is_active === "on",
       updated_at: db.fn.now(),
