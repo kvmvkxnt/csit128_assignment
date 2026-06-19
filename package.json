@@ -43,5 +43,10 @@
   "allowScripts": {
     "unrs-resolver@1.12.2": true,
     "@parcel/watcher@2.5.1": true
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "globalSetup": "./tests/setup/globalSetup.js",
+    "testPathIgnorePatterns": ["/node_modules/", "/tests/setup/"]
   }
 }
