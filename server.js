@@ -1,5 +1,19 @@
 require("dotenv").config({ quiet: true });
 
+// Fail fast and clearly instead of starting with a blank JWT/session
+// secret: that crashed on the first request that needed to sign a token,
+// after the DB write for it had already gone through, leaving an
+// orphaned record. Checked before requiring the route modules below,
+// since those call session() at require-time and would otherwise warn
+// about the missing secret first, obscuring the real error.
+const REQUIRED_ENV = ["JWT_SECRET", "SESSION_SECRET", "DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME"];
+const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key]);
+if (missingEnv.length) {
+  throw new Error(
+    `Missing required environment variable(s): ${missingEnv.join(", ")}. Copy .env.example to .env and fill in real values.`
+  );
+}
+
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -72,6 +86,19 @@ PAGES.forEach((page) => {
 
 app.use("/api", (_req, res) => {
   res.status(404).json({ error: "Unknown API endpoint." });
+});
+
+// Last-resort safety net: every async route handler is wrapped in
+// asyncHandler, which forwards errors here instead of crashing the
+// process. The real error is logged server-side only - never the stack
+// trace to the client.
+app.use((err, req, res, _next) => {
+  console.error(err);
+  if (req.path.startsWith("/api")) {
+    res.status(500).json({ error: "Internal server error." });
+  } else {
+    res.status(500).send("Internal server error.");
+  }
 });
 
 if (require.main === module) {

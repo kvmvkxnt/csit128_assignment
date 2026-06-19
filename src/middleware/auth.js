@@ -28,25 +28,4 @@ function requireAuth(req, res, next) {
   }
 }
 
-function optionalAuth(req, _res, next) {
-  const token = getToken(req);
-  if (token) {
-    try {
-      req.user = jwt.verify(token, process.env.JWT_SECRET);
-    } catch {
-      req.user = null;
-    }
-  }
-  next();
-}
-
-function requireRole(role) {
-  return (req, res, next) => {
-    if (!req.user || req.user.role !== role) {
-      return res.status(403).json({ error: "Insufficient permissions." });
-    }
-    next();
-  };
-}
-
-module.exports = { COOKIE_NAME, signToken, requireAuth, optionalAuth, requireRole };
+module.exports = { COOKIE_NAME, signToken, requireAuth };

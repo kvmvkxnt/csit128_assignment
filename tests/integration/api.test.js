@@ -34,6 +34,27 @@ describe("public read endpoints", () => {
     expect(res.body.some((m) => m.founder)).toBe(true);
   });
 
+  test("GET /api/awards returns seeded awards", async () => {
+    const res = await request(app).get("/api/awards");
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]).toHaveProperty("title");
+  });
+
+  test("GET /api/testimonials returns only active testimonials", async () => {
+    const res = await request(app).get("/api/testimonials");
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]).toHaveProperty("quote");
+  });
+
+  test("GET /api/timeline returns the milestone list in order", async () => {
+    const res = await request(app).get("/api/timeline");
+    expect(res.status).toBe(200);
+    const years = res.body.map((t) => t.year);
+    expect(years).toEqual([...years].sort((a, b) => a - b));
+  });
+
   test("unknown /api route returns 404", async () => {
     const res = await request(app).get("/api/does-not-exist");
     expect(res.status).toBe(404);
