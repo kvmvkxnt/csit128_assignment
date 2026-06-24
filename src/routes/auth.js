@@ -18,10 +18,6 @@ const {
 
 const router = express.Router();
 
-/* -------------------------------------------------- */
-/* Helpers */
-/* -------------------------------------------------- */
-
 const success = (res, data = {}, status = 200) =>
   res.status(status).json({
     success: true,
@@ -48,10 +44,6 @@ const authCookieOptions = {
   maxAge: 1000 * 60 * 60 * 2,
 };
 
-/* -------------------------------------------------- */
-/* Rate Limiting */
-/* -------------------------------------------------- */
-
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
@@ -64,10 +56,6 @@ const authLimiter = rateLimit({
     ],
   },
 });
-
-/* -------------------------------------------------- */
-/* Register */
-/* -------------------------------------------------- */
 
 router.post(
   "/register",
@@ -137,10 +125,6 @@ router.post(
   })
 );
 
-/* -------------------------------------------------- */
-/* Login */
-/* -------------------------------------------------- */
-
 router.post(
   "/login",
   authLimiter,
@@ -193,10 +177,6 @@ router.post(
   })
 );
 
-/* -------------------------------------------------- */
-/* Logout */
-/* -------------------------------------------------- */
-
 router.post("/logout", (_req, res) => {
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
@@ -208,10 +188,6 @@ router.post("/logout", (_req, res) => {
     message: "Logged out successfully.",
   });
 });
-
-/* -------------------------------------------------- */
-/* Current User */
-/* -------------------------------------------------- */
 
 router.get(
   "/me",
