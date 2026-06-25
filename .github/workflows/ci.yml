@@ -19,7 +19,7 @@ jobs:
           MYSQL_USER: veyra
           MYSQL_PASSWORD: veyrapass
         ports:
-          - 3306:3306
+          - 3307:3306
         options: >-
           --health-cmd="mysqladmin ping -h localhost -uroot -prootpass"
           --health-interval=5s
@@ -29,7 +29,7 @@ jobs:
     env:
       NODE_ENV: test
       DB_HOST: 127.0.0.1
-      DB_PORT: 3306
+      DB_PORT: 3307
       DB_USER: veyra
       DB_PASSWORD: veyrapass
       DB_NAME: veyra
@@ -55,7 +55,7 @@ jobs:
       # container creates automatically from MYSQL_DATABASE.
       - name: Create test database
         run: |
-          mysql -h127.0.0.1 -P3306 -uroot -prootpass -e \
+          mysql -h127.0.0.1 -P3307 -uroot -prootpass -e \
             "CREATE DATABASE IF NOT EXISTS veyra_test; GRANT ALL PRIVILEGES ON veyra_test.* TO 'veyra'@'%'; FLUSH PRIVILEGES;"
 
       - name: Lint
