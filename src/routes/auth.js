@@ -26,7 +26,7 @@ const success = (res, data = {}, status = 200) =>
 
 const error = (res, errors, status = 400) =>
   res.status(status).json({
-    success: false,
+    ok: false,
     errors: Array.isArray(errors) ? errors : [errors],
   });
 

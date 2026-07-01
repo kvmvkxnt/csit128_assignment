@@ -13,14 +13,11 @@ const {
 const router = express.Router();
 
 const ok = (res, data, status = 200) =>
-  res.status(status).json({
-    success: true,
-    data,
-  });
+  res.status(status).json(data);
 
 const fail = (res, errors, status = 400) =>
   res.status(status).json({
-    success: false,
+    ok: false,
     errors: Array.isArray(errors) ? errors : [errors],
   });
 
@@ -269,6 +266,7 @@ router.post(
     return ok(
       res,
       {
+        ok: true,
         id,
         ...record,
       },
