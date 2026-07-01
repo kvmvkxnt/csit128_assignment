@@ -1,86 +1,71 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <%- include("../partials/admin-head", { title: "Dashboard" }) %>
+<body>
+<%- include("../partials/admin-nav", { title: "Dashboard" }) %>
 
-<body class="bg-slate-100 min-h-screen">
-
-<%- include("../partials/admin-nav") %>
-
-  <main class="max-w-7xl mx-auto px-6 py-8">
-
-```
-<div class="mb-8">
-  <h1 class="text-4xl font-bold text-slate-900">
-    Dashboard.
-  </h1>
-
-  <p class="text-slate-500 mt-2">
-    Welcome back, <span class="font-semibold"><%= admin.name %></span>
-  </p>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-  <% Object.entries(counts).forEach(([label, value]) => { %>
-
-  <div
-    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-
-    <div class="flex justify-between items-center">
-
-      <div>
-        <p class="text-sm uppercase tracking-wide text-slate-500">
-          <%= label.replaceAll("_", " ") %>
-        </p>
-
-        <h2 class="text-4xl font-bold text-slate-900 mt-2">
-          <%= value %>
-        </h2>
-      </div>
-
-      <div
-        class="w-14 h-14 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl"
-      </div>
-
+<div class="stats-grid">
+  <% const meta = {
+    products:  { icon: "📦", color: "#ede9fe", label: "Products" },
+    services:  { icon: "⚙️",  color: "#dbeafe", label: "Services" },
+    team:      { icon: "👥", color: "#dcfce7", label: "Team" },
+    comments:  { icon: "💬", color: "#fef9c3", label: "Feedback" },
+    users:     { icon: "🔑", color: "#fee2e2", label: "Users" },
+    news:      { icon: "📰", color: "#f0fdf4", label: "News" },
+    orders:    { icon: "🛒", color: "#fff7ed", label: "Orders" },
+    contact:   { icon: "✉️",  color: "#f0f9ff", label: "Messages" },
+  }; %>
+  <% Object.entries(counts).forEach(([key, value]) => {
+    const m = meta[key] || { icon: "•", color: "#f1f5f9", label: key };
+  %>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:<%= m.color %>"><%= m.icon %></div>
+      <div class="stat-value"><%= value %></div>
+      <div class="stat-label"><%= m.label %></div>
     </div>
-
-  </div>
-
   <% }) %>
-
 </div>
-<section class="mt-10">
 
-  <h2 class="text-xl font-semibold text-slate-900 mb-4">
-    Quick Actions
-  </h2>
-
-  <div class="grid md:grid-cols-3 gap-4">
-
-    <a
-      href="/admin/products"
-      class="bg-indigo-600 hover:bg-indigo-700 text-white p-5 rounded-xl shadow transition">
-      Manage Products
-    </a>
-
-    <a
-      href="/admin/services"
-      class="bg-emerald-600 hover:bg-emerald-700 text-white p-5 rounded-xl shadow transition">
-      Manage Services
-    </a>
-
-    <a
-      href="/admin/orders"
-      class="bg-orange-600 hover:bg-orange-700 text-white p-5 rounded-xl shadow transition">
-      View Orders
-    </a>
-
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div class="table-wrap">
+    <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;font-size:13.5px;font-weight:700;color:#0f172a">Quick links</div>
+    <div style="padding:8px 10px">
+      <% const links = [
+        ["/admin/products","Add product","📦"],
+        ["/admin/services","Add service","⚙️"],
+        ["/admin/news","Add news article","📰"],
+        ["/admin/team","Add team member","👥"],
+        ["/admin/feedback","Moderate feedback","💬"],
+        ["/admin/contact","View messages","✉️"],
+      ] %>
+      <% links.forEach(([href, label, icon]) => { %>
+        <a href="<%= href %>" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;text-decoration:none;color:#334155;font-size:13px;font-weight:500;transition:background 0.1s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+          <span><%= icon %></span> <%= label %>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" width="13" height="13" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      <% }) %>
+    </div>
   </div>
 
-</section>
-```
+  <div class="table-wrap">
+    <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;font-size:13.5px;font-weight:700;color:#0f172a">Site status</div>
+    <div style="padding:16px 20px">
+      <% const checks = [
+        ["Public site", true],
+        ["API endpoints", true],
+        ["Database", true],
+        ["Admin panel", true],
+      ] %>
+      <% checks.forEach(([label, ok]) => { %>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8fafc">
+          <span style="font-size:13px;color:#475569"><%= label %></span>
+          <span class="badge <%= ok ? 'badge-green' : 'badge-red' %>"><%= ok ? '● Online' : '● Offline' %></span>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
 
-  </main>
-
+<%- include("../partials/admin-foot") %>
 </body>
 </html>
