@@ -1,37 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include("../partials/admin-head", { title: "Feedback" }) %>
-<body class="bg-slate-100 min-h-screen">
-<%- include("../partials/admin-head", { title: "feedback" }) %>
+<body>
+<%- include("../partials/admin-nav", { title: "Feedback" }) %>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6">Feedback moderation</h1>
-
-    <table class="w-full bg-white rounded-lg shadow overflow-hidden text-sm">
-      <thead class="bg-slate-50 text-slate-500 text-left">
-        <tr><th class="px-4 py-2">Name</th><th class="px-4 py-2">Rating</th><th class="px-4 py-2">Message</th><th class="px-4 py-2">Approved</th><th class="px-4 py-2"></th></tr>
-      </thead>
-      <tbody>
-        <% comments.forEach(c => { %>
-          <tr class="border-t align-top">
-            <td class="px-4 py-2"><%= c.name %><br/><span class="text-xs text-slate-400"><%= c.email %></span></td>
-            <td class="px-4 py-2"><%= c.rating %>/5</td>
-            <td class="px-4 py-2 max-w-md"><%= c.message %></td>
-            <td class="px-4 py-2"><%= c.is_approved ? "Yes" : "No" %></td>
-            <td class="px-4 py-2 flex gap-2">
+<div class="section-header">
+  <div class="section-title">Feedback moderation</div>
+  <span class="badge badge-gray"><%= comments.length %> submissions</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Reviewer</th><th>Rating</th><th>Message</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% comments.forEach(c => { %>
+        <tr style="vertical-align:top">
+          <td>
+            <div style="font-weight:600;color:#0f172a"><%= c.name %></div>
+            <div class="text-muted"><%= c.email %></div>
+          </td>
+          <td>
+            <div style="color:#f59e0b;font-size:14px;letter-spacing:1px"><%= "★".repeat(c.rating) + "☆".repeat(5-c.rating) %></div>
+            <div class="text-muted"><%= c.rating %>/5</div>
+          </td>
+          <td style="max-width:320px;font-size:13px;color:#475569"><%= c.message %></td>
+          <td><span class="badge <%= c.is_approved ? 'badge-green' : 'badge-yellow' %>"><%= c.is_approved ? "Approved" : "Pending" %></span></td>
+          <td>
+            <div class="td-actions">
               <form method="POST" action="/admin/feedback/<%= c.id %>/toggle">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <button type="submit" class="text-blue-600 hover:underline"><%= c.is_approved ? "Hide" : "Approve" %></button>
+                <button type="submit" class="btn-action-sm"><%= c.is_approved ? "Hide" : "Approve" %></button>
               </form>
-              <form method="POST" action="/admin/feedback/<%= c.id %>/delete" onsubmit="return confirm('Delete this comment?');">
+              <form method="POST" action="/admin/feedback/<%= c.id %>/delete" onsubmit="return confirm('Delete this comment?')">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                <button type="submit" class="btn-danger-sm">Delete</button>
               </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </main>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (!comments.length) { %>
+        <tr class="empty-row"><td colspan="5">No feedback submissions yet.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("../partials/admin-foot") %>
 </body>
 </html>

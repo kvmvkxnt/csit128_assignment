@@ -1,81 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include("../partials/admin-head", { title: "Team" }) %>
-<body class="bg-slate-100 min-h-screen">
- <%- include("../partials/admin-head", { title: "Team" }) %>
+<body>
+<%- include("../partials/admin-nav", { title: "Team" }) %>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6"><%= editing ? "Edit team member" : "New team member" %></h1>
-
-    <form method="POST" action="<%= editing ? `/admin/team/${editing.id}` : '/admin/team' %>"
-          class="bg-white rounded-lg shadow p-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
+<div class="card">
+  <div class="card-title"><%= editing ? "✏️ Edit team member" : "➕ Add team member" %></div>
+  <form method="POST" action="<%= editing ? `/admin/team/${editing.id}` : '/admin/team' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="form-grid">
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Name</label>
-        <input name="name" required value="<%= editing ? editing.name : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Full name</label>
+        <input name="name" required value="<%= editing ? editing.name : '' %>" class="form-input" placeholder="Jane Smith" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Role</label>
-        <input name="role" required value="<%= editing ? editing.role : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Role / title</label>
+        <input name="role" required value="<%= editing ? editing.role : '' %>" class="form-input" placeholder="Head of Engineering" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Initials</label>
-        <input name="initials" value="<%= editing ? (editing.initials || '') : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Initials</label>
+        <input name="initials" value="<%= editing ? (editing.initials || '') : '' %>" class="form-input" placeholder="JS" maxlength="3" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Accent colour</label>
-        <input name="accent" value="<%= editing ? (editing.accent || '') : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Accent colour</label>
+        <input name="accent" value="<%= editing ? (editing.accent || '') : '' %>" class="form-input" placeholder="#6366f1" />
       </div>
-      <div class="md:col-span-2">
-        <label class="block text-sm text-slate-600 mb-1">Bio</label>
-        <textarea name="bio" rows="3" class="w-full border rounded px-3 py-2"><%= editing ? (editing.bio || '') : '' %></textarea>
+      <div class="col-span-2">
+        <label class="form-label">Bio</label>
+        <textarea name="bio" rows="3" class="form-textarea" placeholder="Short biography…"><%= editing ? (editing.bio || '') : '' %></textarea>
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Order</label>
-        <input type="number" name="order_index" value="<%= editing ? editing.order_index : 0 %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Display order</label>
+        <input type="number" name="order_index" value="<%= editing ? editing.order_index : 0 %>" class="form-input" />
       </div>
-      <div class="flex items-center gap-2">
-        <input type="checkbox" name="founder" id="founder" <%= editing && editing.founder ? "checked" : "" %> />
-        <label for="founder" class="text-sm text-slate-600">Founder</label>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+        <div class="checkbox-row">
+          <input type="checkbox" name="founder" id="founder" <%= editing && editing.founder ? "checked" : "" %> />
+          <label for="founder">Co-founder</label>
+        </div>
       </div>
       <% if (editing) { %>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" name="is_active" id="is_active" <%= editing.is_active ? "checked" : "" %> />
-          <label for="is_active" class="text-sm text-slate-600">Visible on site</label>
+        <div class="col-span-2">
+          <div class="checkbox-row">
+            <input type="checkbox" name="is_active" id="is_active" <%= editing.is_active ? "checked" : "" %> />
+            <label for="is_active">Visible on public site</label>
+          </div>
         </div>
       <% } %>
-      <div class="md:col-span-2 flex gap-3">
-        <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded hover:bg-slate-700">
-          <%= editing ? "Save changes" : "Add team member" %>
-        </button>
-        <% if (editing) { %>
-          <a href="/admin/team" class="px-4 py-2 rounded border">Cancel</a>
-        <% } %>
+      <div class="col-span-2">
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"><%= editing ? "Save changes" : "Add team member" %></button>
+          <% if (editing) { %><a href="/admin/team" class="btn btn-ghost">Cancel</a><% } %>
+        </div>
       </div>
-    </form>
+    </div>
+  </form>
+</div>
 
-    <table class="w-full bg-white rounded-lg shadow overflow-hidden text-sm">
-      <thead class="bg-slate-50 text-slate-500 text-left">
-        <tr><th class="px-4 py-2">Name</th><th class="px-4 py-2">Role</th><th class="px-4 py-2">Founder</th><th class="px-4 py-2"></th></tr>
-      </thead>
-      <tbody>
-        <% team.forEach(m => { %>
-          <tr class="border-t">
-            <td class="px-4 py-2"><%= m.name %></td>
-            <td class="px-4 py-2"><%= m.role %></td>
-            <td class="px-4 py-2"><%= m.founder ? "Yes" : "No" %></td>
-            <td class="px-4 py-2 flex gap-2">
-              <a href="/admin/team/<%= m.id %>/edit" class="text-blue-600 hover:underline">Edit</a>
-              <form method="POST" action="/admin/team/<%= m.id %>/delete" onsubmit="return confirm('Delete this team member?');">
+<div class="section-header">
+  <div class="section-title">Team members</div>
+  <span class="badge badge-gray"><%= team.length %> total</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Member</th><th>Role</th><th>Founder</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% team.forEach(m => { %>
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:50%;background:<%= m.accent || '#6366f1' %>;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;flex-shrink:0"><%= m.initials || m.name.charAt(0) %></div>
+              <span style="font-weight:600;color:#0f172a"><%= m.name %></span>
+            </div>
+          </td>
+          <td><%= m.role %></td>
+          <td><% if(m.founder) { %><span class="badge badge-yellow">Founder</span><% } else { %>—<% } %></td>
+          <td><span class="badge <%= m.is_active ? 'badge-green' : 'badge-gray' %>"><%= m.is_active ? "Visible" : "Hidden" %></span></td>
+          <td>
+            <div class="td-actions">
+              <a href="/admin/team/<%= m.id %>/edit" class="btn-action-sm">Edit</a>
+              <form method="POST" action="/admin/team/<%= m.id %>/delete" onsubmit="return confirm('Remove <%= m.name %> from the team?')">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                <button type="submit" class="btn-danger-sm">Remove</button>
               </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </main>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (!team.length) { %>
+        <tr class="empty-row"><td colspan="5">No team members yet — add your first one above.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("../partials/admin-foot") %>
 </body>
 </html>

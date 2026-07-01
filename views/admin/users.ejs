@@ -1,42 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include("../partials/admin-head", { title: "Users" }) %>
-<body class="bg-slate-100 min-h-screen">
- <%- include("../partials/admin-nav", { title: "Users" }) %>
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6">Users</h1>
+<body>
+<%- include("../partials/admin-nav", { title: "Users" }) %>
 
-    <table class="w-full bg-white rounded-lg shadow overflow-hidden text-sm">
-      <thead class="bg-slate-50 text-slate-500 text-left">
-        <tr><th class="px-4 py-2">Name</th><th class="px-4 py-2">Email</th><th class="px-4 py-2">Role</th><th class="px-4 py-2"></th></tr>
-      </thead>
-      <tbody>
-        <% users.forEach(u => { %>
-          <tr class="border-t">
-            <td class="px-4 py-2"><%= u.name %></td>
-            <td class="px-4 py-2"><%= u.email %></td>
-            <td class="px-4 py-2"><%= u.role %></td>
-            <td class="px-4 py-2 flex gap-2">
-              <% if (u.id !== admin.id) { %>
+<div class="section-header">
+  <div class="section-title">Users</div>
+  <span class="badge badge-gray"><%= users.length %> total</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>User</th><th>Email</th><th>Role</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% users.forEach(u => { %>
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:50%;background:#6366f1;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;flex-shrink:0"><%= u.name.charAt(0).toUpperCase() %></div>
+              <div>
+                <div style="font-weight:600;color:#0f172a"><%= u.name %></div>
+                <% if(u.id === admin.id) { %><div class="text-muted">You</div><% } %>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted"><%= u.email %></td>
+          <td><span class="badge <%= u.role === 'admin' ? 'badge-purple' : 'badge-blue' %>"><%= u.role %></span></td>
+          <td>
+            <% if (u.id !== admin.id) { %>
+              <div class="td-actions">
                 <form method="POST" action="/admin/users/<%= u.id %>/role">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                   <input type="hidden" name="role" value="<%= u.role === 'admin' ? 'user' : 'admin' %>" />
-                  <button type="submit" class="text-blue-600 hover:underline">
-                    <%= u.role === 'admin' ? "Demote" : "Promote" %>
-                  </button>
+                  <button type="submit" class="btn-action-sm"><%= u.role === 'admin' ? 'Demote' : 'Promote to admin' %></button>
                 </form>
-                <form method="POST" action="/admin/users/<%= u.id %>/delete" onsubmit="return confirm('Delete this user?');">
+                <form method="POST" action="/admin/users/<%= u.id %>/delete" onsubmit="return confirm('Delete <%= u.name %>? This cannot be undone.')">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                  <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                  <button type="submit" class="btn-danger-sm">Delete</button>
                 </form>
-              <% } else { %>
-                <span class="text-slate-400">You</span>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </main>
+              </div>
+            <% } else { %>
+              <span class="text-muted">—</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (!users.length) { %>
+        <tr class="empty-row"><td colspan="4">No users found.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("../partials/admin-foot") %>
 </body>
 </html>

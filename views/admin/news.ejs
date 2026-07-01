@@ -1,80 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include("../partials/admin-head", { title: "News" }) %>
-<body class="bg-slate-100 min-h-screen">
- <%- include("../partials/admin-head", { title: "news" }) %>
+<body>
+<%- include("../partials/admin-nav", { title: "News" }) %>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6"><%= editing ? "Edit article" : "New article" %></h1>
-
-    <form method="POST" action="<%= editing ? `/admin/news/${editing.id}` : '/admin/news' %>"
-          class="bg-white rounded-lg shadow p-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
+<div class="card">
+  <div class="card-title"><%= editing ? "✏️ Edit article" : "➕ Add news article" %></div>
+  <form method="POST" action="<%= editing ? `/admin/news/${editing.id}` : '/admin/news' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <div class="form-grid">
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Slug</label>
-        <input name="slug" required value="<%= editing ? editing.slug : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Slug</label>
+        <input name="slug" required value="<%= editing ? editing.slug : '' %>" class="form-input" placeholder="article-slug" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Title</label>
-        <input name="title" required value="<%= editing ? editing.title : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Title</label>
+        <input name="title" required value="<%= editing ? editing.title : '' %>" class="form-input" placeholder="Article headline" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Category</label>
-        <input name="category" value="<%= editing ? (editing.category || '') : '' %>" class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Category</label>
+        <input name="category" value="<%= editing ? (editing.category || '') : '' %>" class="form-input" placeholder="Product, Company, Engineering…" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Published date</label>
-        <input type="date" name="published_at" required
-               value="<%= editing ? new Date(editing.published_at).toISOString().slice(0,10) : '' %>"
-               class="w-full border rounded px-3 py-2" />
+        <label class="form-label">Published date</label>
+        <input type="date" name="published_at" required value="<%= editing ? new Date(editing.published_at).toISOString().slice(0,10) : '' %>" class="form-input" />
       </div>
       <div>
-        <label class="block text-sm text-slate-600 mb-1">Order</label>
-        <input type="number" name="order_index" value="<%= editing ? editing.order_index : 0 %>" class="w-full border rounded px-3 py-2" />
-      </div>
-      <div class="md:col-span-2">
-        <label class="block text-sm text-slate-600 mb-1">Summary</label>
-        <textarea name="summary" rows="3" class="w-full border rounded px-3 py-2"><%= editing ? (editing.summary || '') : '' %></textarea>
+        <label class="form-label">Display order</label>
+        <input type="number" name="order_index" value="<%= editing ? editing.order_index : 0 %>" class="form-input" />
       </div>
       <% if (editing) { %>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" name="is_active" id="is_active" <%= editing.is_active ? "checked" : "" %> />
-          <label for="is_active" class="text-sm text-slate-600">Visible on site</label>
+        <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+          <div class="checkbox-row">
+            <input type="checkbox" name="is_active" id="is_active" <%= editing.is_active ? "checked" : "" %> />
+            <label for="is_active">Visible on public site</label>
+          </div>
         </div>
       <% } %>
-      <div class="md:col-span-2 flex gap-3">
-        <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded hover:bg-slate-700">
-          <%= editing ? "Save changes" : "Create article" %>
-        </button>
-        <% if (editing) { %>
-          <a href="/admin/news" class="px-4 py-2 rounded border">Cancel</a>
-        <% } %>
+      <div class="col-span-2">
+        <label class="form-label">Summary</label>
+        <textarea name="summary" rows="3" class="form-textarea" placeholder="Article excerpt…"><%= editing ? (editing.summary || '') : '' %></textarea>
       </div>
-    </form>
+      <div class="col-span-2">
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"><%= editing ? "Save changes" : "Publish article" %></button>
+          <% if (editing) { %><a href="/admin/news" class="btn btn-ghost">Cancel</a><% } %>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
 
-    <table class="w-full bg-white rounded-lg shadow overflow-hidden text-sm">
-      <thead class="bg-slate-50 text-slate-500 text-left">
-        <tr><th class="px-4 py-2">Title</th><th class="px-4 py-2">Category</th><th class="px-4 py-2">Published</th><th class="px-4 py-2">Active</th><th class="px-4 py-2"></th></tr>
-      </thead>
-      <tbody>
-        <% articles.forEach(a => { %>
-          <tr class="border-t">
-            <td class="px-4 py-2"><%= a.title %></td>
-            <td class="px-4 py-2"><%= a.category || "—" %></td>
-            <td class="px-4 py-2"><%= new Date(a.published_at).toISOString().slice(0,10) %></td>
-            <td class="px-4 py-2"><%= a.is_active ? "Yes" : "No" %></td>
-            <td class="px-4 py-2 flex gap-2">
-              <a href="/admin/news/<%= a.id %>/edit" class="text-blue-600 hover:underline">Edit</a>
-              <form method="POST" action="/admin/news/<%= a.id %>/delete" onsubmit="return confirm('Delete this article?');">
+<div class="section-header">
+  <div class="section-title">All articles</div>
+  <span class="badge badge-gray"><%= articles.length %> total</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Title</th><th>Category</th><th>Published</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% articles.forEach(a => { %>
+        <tr>
+          <td>
+            <div style="font-weight:600;color:#0f172a"><%= a.title %></div>
+            <div class="text-muted"><%= a.slug %></div>
+          </td>
+          <td><% if(a.category) { %><span class="badge badge-purple"><%= a.category %></span><% } else { %>—<% } %></td>
+          <td><%= new Date(a.published_at).toISOString().slice(0,10) %></td>
+          <td><span class="badge <%= a.is_active ? 'badge-green' : 'badge-gray' %>"><%= a.is_active ? "Published" : "Draft" %></span></td>
+          <td>
+            <div class="td-actions">
+              <a href="/admin/news/<%= a.id %>/edit" class="btn-action-sm">Edit</a>
+              <form method="POST" action="/admin/news/<%= a.id %>/delete" onsubmit="return confirm('Delete this article?')">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                <button type="submit" class="btn-danger-sm">Delete</button>
               </form>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </main>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (!articles.length) { %>
+        <tr class="empty-row"><td colspan="5">No articles yet — write your first one above.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("../partials/admin-foot") %>
 </body>
 </html>

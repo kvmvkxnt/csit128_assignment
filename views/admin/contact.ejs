@@ -1,48 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include("../partials/admin-head", { title: "Contact requests" }) %>
-<body class="bg-slate-100 min-h-screen">
-  <%- include("../partials/admin-head", { title: "contact requests" }) %>
+<body>
+<%- include("../partials/admin-nav", { title: "Contact requests" }) %>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-semibold text-slate-800 mb-6">Contact requests</h1>
-
-    <table class="w-full bg-white rounded-lg shadow overflow-hidden text-sm">
-      <thead class="bg-slate-50 text-slate-500 text-left">
-        <tr>
-          <th class="px-4 py-2">From</th>
-          <th class="px-4 py-2">Subject</th>
-          <th class="px-4 py-2">Message</th>
-          <th class="px-4 py-2">Read</th>
-          <th class="px-4 py-2">Received</th>
-          <th class="px-4 py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% messages.forEach(m => { %>
-          <tr class="border-t align-top">
-            <td class="px-4 py-2"><%= m.name %><br/><span class="text-xs text-slate-400"><%= m.email %></span></td>
-            <td class="px-4 py-2"><%= m.subject %></td>
-            <td class="px-4 py-2 max-w-md"><%= m.message %></td>
-            <td class="px-4 py-2"><%= m.is_read ? "Yes" : "No" %></td>
-            <td class="px-4 py-2"><%= new Date(m.submitted_at).toISOString().slice(0,10) %></td>
-            <td class="px-4 py-2 flex gap-2">
+<div class="section-header">
+  <div class="section-title">Contact requests</div>
+  <span class="badge badge-gray"><%= messages.length %> messages</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>From</th><th>Subject</th><th>Message</th><th>Status</th><th>Date</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% messages.forEach(m => { %>
+        <tr style="vertical-align:top">
+          <td>
+            <div style="font-weight:600;color:#0f172a"><%= m.name %></div>
+            <div class="text-muted"><%= m.email %></div>
+          </td>
+          <td style="font-weight:500;max-width:160px"><%= m.subject %></td>
+          <td style="max-width:280px;font-size:13px;color:#475569"><%= m.message %></td>
+          <td><span class="badge <%= m.is_read ? 'badge-gray' : 'badge-blue' %>"><%= m.is_read ? "Read" : "New" %></span></td>
+          <td class="text-muted"><%= new Date(m.submitted_at).toISOString().slice(0,10) %></td>
+          <td>
+            <div class="td-actions">
               <form method="POST" action="/admin/contact/<%= m.id %>/toggle">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <button type="submit" class="text-blue-600 hover:underline"><%= m.is_read ? "Mark unread" : "Mark read" %></button>
+                <button type="submit" class="btn-action-sm"><%= m.is_read ? "Mark unread" : "Mark read" %></button>
               </form>
-              <form method="POST" action="/admin/contact/<%= m.id %>/delete" onsubmit="return confirm('Delete this message?');">
+              <form method="POST" action="/admin/contact/<%= m.id %>/delete" onsubmit="return confirm('Delete this message?')">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                <button type="submit" class="btn-danger-sm">Delete</button>
               </form>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (!messages.length) { %>
-          <tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">No messages yet.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
-  </main>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+      <% if (!messages.length) { %>
+        <tr class="empty-row"><td colspan="6">No contact messages yet.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("../partials/admin-foot") %>
 </body>
 </html>
